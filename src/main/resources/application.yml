@@ -18,3 +18,11 @@ spring:
     password: redis_lock
   flyway:
     schemas: ${spring.datasource.default_schema}
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
+redis-lock-example:
+  lock-registry-key: job_lock
+  release-time-duration: 30
