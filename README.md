@@ -16,3 +16,18 @@ Install postgres locally or run it through docker with :
 
 ## Application
 Once Redis and the postgres database are launched, you can start the Spring Boot project and try it out.
+
+Get all jobs
+```
+curl --location 'http://localhost:8080/redis-lock-example/jobs'
+```
+
+Create a job
+```
+curl --location --request POST 'http://localhost:8080/redis-lock-example/jobs?name=SOME_JOB'
+```
+
+Start a job
+```
+curl --location --request POST 'http://localhost:8080/redis-lock-example/jobs/3/start'
+```
