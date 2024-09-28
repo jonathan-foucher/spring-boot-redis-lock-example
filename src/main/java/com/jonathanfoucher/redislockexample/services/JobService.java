@@ -60,13 +60,12 @@ public class JobService {
 
         try {
             // simulate running job
-            TimeUnit.SECONDS.sleep(10);
+            doSomething();
             log.info("successfully processed job {}", job);
             job.setStatus(SUCCESS);
         } catch (InterruptedException e) {
             log.error("failed to process job {}", job);
             log.error(e.getMessage());
-            Thread.currentThread().interrupt();
             job.setStatus(ERROR);
         } finally {
             job.setEndDate(LocalDateTime.now());
@@ -90,5 +89,9 @@ public class JobService {
         entity.setName(name);
         entity.setStatus(WAITING);
         return entity;
+    }
+
+    void doSomething() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(10);
     }
 }
