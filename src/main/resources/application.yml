@@ -8,3 +8,13 @@ spring:
     name: redis-lock-example
   jackson:
     property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
+  datasource:
+    db: redis_lock_db
+    host: localhost
+    port: 5432
+    default_schema: redis_lock
+    url: "jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.db}?currentSchema=${spring.datasource.default_schema}"
+    username: redis_lock
+    password: redis_lock
+  flyway:
+    schemas: ${spring.datasource.default_schema}

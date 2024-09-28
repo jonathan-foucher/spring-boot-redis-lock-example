@@ -1,7 +1,7 @@
 ### introduction
 This project is an example of Redis lock implementation with Spring Boot.
 
-The objective is to create a resource lock on some database entities to avoid them being updated simultaneously by multiple processes.
+The objective is to create a resource lock on some database entities to prevent them being updated simultaneously by multiple processes.
 
 ### run the project
 ## Redis
@@ -12,7 +12,7 @@ You can either install Redis directly on your machine or run it through Docker :
 
 ## Database
 Install postgres locally or run it through docker with :
-`docker run -p 5432:5432 postgres`
+`docker run -p 5432:5432 -e POSTGRES_DB=redis_lock_db -e POSTGRES_USER=redis_lock -e POSTGRES_PASSWORD=redis_lock postgres`
 
 ## Application
 Once Redis and the postgres database are launched, you can start the Spring Boot project and try it out.
