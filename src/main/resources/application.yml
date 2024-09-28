@@ -1,0 +1,10 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /redis-lock-example
+
+spring:
+  application:
+    name: redis-lock-example
+  jackson:
+    property-naming-strategy: com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
