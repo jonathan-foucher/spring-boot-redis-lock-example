@@ -12,12 +12,12 @@ spring:
     db: redis_lock_db
     host: localhost
     port: 5432
-    default_schema: redis_lock
-    url: "jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.db}?currentSchema=${spring.datasource.default_schema}"
+    default-schema: redis_lock
+    url: "jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.db}?currentSchema=${spring.datasource.default-schema}"
     username: redis_lock
     password: redis_lock
   flyway:
-    schemas: ${spring.datasource.default_schema}
+    schemas: ${spring.datasource.default-schema}
   data:
     redis:
       port: 6379
