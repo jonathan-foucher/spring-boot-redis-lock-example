@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import static com.jonathanfoucher.redislockexample.data.enums.JobStatus.*;
@@ -39,6 +40,7 @@ class JobServiceTest {
     @MockBean
     private ExpirableLockRegistry redisLockRegistry;
 
+    private static final int TRY_LOCK_TIMEOUT = 60;
     private static final Long ID = 15L;
     private static final String NAME = "SOME_JOB";
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusMinutes(20);
@@ -114,7 +116,7 @@ class JobServiceTest {
     }
 
     @Test
-    void startJob() {
+    void startJob() throws InterruptedException {
         // GIVEN
         Job job = new Job();
         job.setId(ID);
@@ -127,7 +129,7 @@ class JobServiceTest {
                 .thenReturn(Optional.of(job));
         when(redisLockRegistry.obtain(String.valueOf(ID)))
                 .thenReturn(lock);
-        when(lock.tryLock())
+        when(lock.tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS))
                 .thenReturn(true);
 
         // WHEN
@@ -138,7 +140,7 @@ class JobServiceTest {
         InOrder inOrder = inOrder(jobRepository, redisLockRegistry, lock);
         inOrder.verify(jobRepository, times(1)).findById(ID);
         inOrder.verify(redisLockRegistry, times(1)).obtain(String.valueOf(ID));
-        inOrder.verify(lock, times(1)).tryLock();
+        inOrder.verify(lock, times(1)).tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS);
         inOrder.verify(jobRepository, times(1)).save(capturedJob.capture());
         inOrder.verify(lock, times(1)).unlock();
 
@@ -165,10 +167,10 @@ class JobServiceTest {
                 .thenReturn(Optional.of(job));
         when(redisLockRegistry.obtain(String.valueOf(ID)))
                 .thenReturn(lock);
-        when(lock.tryLock())
+        when(lock.tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS))
                 .thenReturn(true);
 
-        doThrow(InterruptedException.class)
+        doThrow(RuntimeException.class)
                 .when(jobService)
                 .doSomething();
 
@@ -180,7 +182,7 @@ class JobServiceTest {
         InOrder inOrder = inOrder(jobRepository, redisLockRegistry, lock);
         inOrder.verify(jobRepository, times(1)).findById(ID);
         inOrder.verify(redisLockRegistry, times(1)).obtain(String.valueOf(ID));
-        inOrder.verify(lock, times(1)).tryLock();
+        inOrder.verify(lock, times(1)).tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS);
         inOrder.verify(jobRepository, times(1)).save(capturedJob.capture());
         inOrder.verify(lock, times(1)).unlock();
 
@@ -194,7 +196,7 @@ class JobServiceTest {
     }
 
     @Test
-    void startJobWithJobNotFound() {
+    void startJobWithJobNotFound() throws InterruptedException {
         // GIVEN
         Lock lock = mock(Lock.class);
 
@@ -209,13 +211,13 @@ class JobServiceTest {
         // THEN
         verify(jobRepository, times(1)).findById(ID);
         verify(redisLockRegistry, never()).obtain(any());
-        verify(lock, never()).tryLock();
+        verify(lock, never()).tryLock(anyInt(), any());
         verify(jobRepository, never()).save(any());
         verify(lock, never()).unlock();
     }
 
     @Test
-    void startJobWithJobAlreadyProcessed() {
+    void startJobWithJobAlreadyProcessed() throws InterruptedException {
         // GIVEN
         Job job = new Job();
         job.setId(ID);
@@ -235,13 +237,13 @@ class JobServiceTest {
         // THEN
         verify(jobRepository, times(1)).findById(ID);
         verify(redisLockRegistry, never()).obtain(any());
-        verify(lock, never()).tryLock();
+        verify(lock, never()).tryLock(anyInt(), any());
         verify(jobRepository, never()).save(any());
         verify(lock, never()).unlock();
     }
 
     @Test
-    void startJobWithJobLocked() {
+    void startJobWithJobLocked() throws InterruptedException {
         // GIVEN
         Job job = new Job();
         job.setId(ID);
@@ -254,7 +256,7 @@ class JobServiceTest {
                 .thenReturn(Optional.of(job));
         when(redisLockRegistry.obtain(String.valueOf(ID)))
                 .thenReturn(lock);
-        when(lock.tryLock())
+        when(lock.tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS))
                 .thenReturn(false);
 
         // WHEN
@@ -266,7 +268,7 @@ class JobServiceTest {
         InOrder inOrder = inOrder(jobRepository, redisLockRegistry, lock);
         inOrder.verify(jobRepository, times(1)).findById(ID);
         inOrder.verify(redisLockRegistry, times(1)).obtain(String.valueOf(ID));
-        inOrder.verify(lock, times(1)).tryLock();
+        inOrder.verify(lock, times(1)).tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS);
         verify(jobRepository, never()).save(any());
         inOrder.verify(lock, never()).unlock();
     }

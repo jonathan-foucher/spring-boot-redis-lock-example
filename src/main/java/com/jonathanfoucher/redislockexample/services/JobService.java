@@ -26,6 +26,8 @@ public class JobService {
     private final JobRepository jobRepository;
     private final ExpirableLockRegistry redisLockRegistry;
 
+    private static final int TRY_LOCK_TIMEOUT = 60;
+
     public List<JobDto> getAllJobs() {
         return jobRepository.findAll()
                 .stream()
@@ -51,27 +53,37 @@ public class JobService {
     }
 
     private void processJob(Job job) {
-        log.info("starting to process job {}", job);
-        Lock lock = redisLockRegistry.obtain(String.valueOf(job.getId()));
-        if (!lock.tryLock()) {
-            throw new JobLockedException(job.getId());
-        }
-        job.setStartDate(LocalDateTime.now());
+        Lock lock = getLock(job.getId());
 
         try {
+            log.info("starting to process job {}", job.getId());
+            job.setStartDate(LocalDateTime.now());
             // simulate running job
             doSomething();
-            log.info("successfully processed job {}", job);
             job.setStatus(SUCCESS);
-        } catch (InterruptedException e) {
-            log.error("failed to process job {}", job);
-            log.error(e.getMessage());
+            log.info("successfully processed job {}", job.getId());
+        } catch (Exception e) {
             job.setStatus(ERROR);
+            log.error(e.getMessage());
+            log.error("failed to process job {}", job.getId());
         } finally {
             job.setEndDate(LocalDateTime.now());
             jobRepository.save(job);
             lock.unlock();
         }
+    }
+
+    private Lock getLock(Long jobId) {
+        Lock lock = redisLockRegistry.obtain(String.valueOf(jobId));
+        try {
+            if (!lock.tryLock(TRY_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                throw new JobLockedException(jobId);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+        return lock;
     }
 
     private JobDto convertEntityToDto(Job entity) {
@@ -91,7 +103,12 @@ public class JobService {
         return entity;
     }
 
-    void doSomething() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(10);
+    void doSomething() {
+        try {
+            TimeUnit.SECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
 }
