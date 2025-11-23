@@ -1,15 +1,18 @@
 ## Introduction
-This project is an example of Redis lock implementation with Spring Boot.
+This project is an example of Redis / Valkey lock implementation with Spring Boot.
 
 The objective is to create a resource lock on some database entities to prevent them being updated simultaneously by multiple processes.
 
 ## Run the project
-### Redis
-You will need to launch a Redis instance on your computer before running the project.
+### Valkey
+Valkey is a free open-source project forked from Redis.
+If you prefer, you can choose to run Redis instead.
 
-You can either install Redis directly on your machine or run it through Docker :
+You will need to launch a Valkey instance on your computer before running the project.
+
+You can either install Valkey directly on your machine or run it through Docker :
 ```
-docker run -p 6379:6379 redis
+docker run -p 6379:6379 valkey/valkey
 ```
 
 ### Database
@@ -19,7 +22,7 @@ docker run -p 5432:5432 -e POSTGRES_DB=redis_lock_db -e POSTGRES_USER=redis_lock
 ```
 
 ### Application
-Once Redis and the postgres database are launched, you can start the Spring Boot project and try it out.
+Once Valkey and the postgres database are launched, you can start the Spring Boot project and try it out.
 
 Get all jobs
 ```
