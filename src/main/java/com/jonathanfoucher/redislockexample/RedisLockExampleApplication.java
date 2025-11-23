@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class RedisLockExampleApplication {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(RedisLockExampleApplication.class, args);
     }
 }
