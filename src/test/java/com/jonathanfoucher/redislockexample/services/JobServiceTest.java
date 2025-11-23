@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.integration.support.locks.ExpirableLockRegistry;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.LocalDateTime;
@@ -32,12 +32,12 @@ import static org.mockito.Mockito.*;
 
 @SpringJUnitConfig(JobService.class)
 class JobServiceTest {
-    @SpyBean
+    @MockitoSpyBean
     @Autowired
     private JobService jobService;
-    @MockBean
+    @MockitoBean
     private JobRepository jobRepository;
-    @MockBean
+    @MockitoBean
     private ExpirableLockRegistry redisLockRegistry;
 
     private static final int TRY_LOCK_TIMEOUT = 60;
